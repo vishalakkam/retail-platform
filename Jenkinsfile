@@ -28,6 +28,7 @@ pipeline {
     }
 
     stages {
+
         stage('Validate Parameters') {
             steps {
                 script {
@@ -41,6 +42,23 @@ pipeline {
                     }
 
                     echo 'Parameter validation successful'
+                }
+            }
+        }
+
+        stage('Validate Version') {
+            steps {
+                script {
+                    def tagName = "v${params.VERSION}"
+
+                    if (bat(
+                        script: "git rev-parse --verify refs/tags/${tagName}",
+                        returnStatus: true
+                    ) != 0) {
+                        error("Git tag ${tagName} does not exist")
+                    }
+
+                    echo "Git tag ${tagName} exists"
                 }
             }
         }
