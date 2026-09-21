@@ -75,5 +75,17 @@ pipeline {
                 }
             }
         }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    def imageTag = "retail-platform:${params.VERSION}-${env.BUILD_NUMBER}"
+
+                    echo "Building Docker image: ${imageTag}"
+
+                    bat "docker build -t ${imageTag} ."
+                }
+            }
+        }
     }
 }
