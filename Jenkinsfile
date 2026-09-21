@@ -82,9 +82,9 @@ pipeline {
                     def imageTag = "retail-platform:${params.VERSION}-${env.BUILD_NUMBER}"
 
                     echo "Building Docker image: ${imageTag}"
-
-                    bat bat "\"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe\" build -t ${imageTag} ."
                 }
+
+                bat '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" build -t retail-platform:%VERSION%-%BUILD_NUMBER% .'
             }
         }
     }
