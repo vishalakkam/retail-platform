@@ -87,5 +87,18 @@ pipeline {
                 bat '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" build -t retail-platform:%VERSION%-%BUILD_NUMBER% .'
             }
         }
+
+        stage('Record Previous Image') {
+            steps {
+                script {
+                    def previousImage = bat(
+                        script: '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" inspect --format="{{.Config.Image}}" retail-platform-prod',
+                        returnStdout: true
+                    ).trim()
+
+                    echo "Previous production image: ${previousImage}"
+                }
+            }
+        }
     }
 }
