@@ -1,1 +1,1 @@
-Payment configuration 
+Payment timeout set to 60 seconds 
