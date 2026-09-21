@@ -28,9 +28,20 @@ pipeline {
     }
 
     stages {
-        stage('Start') {
+        stage('Validate Parameters') {
             steps {
-                echo 'Retail Platform deployment pipeline started'
+                script {
+                    echo "Action: ${params.DEPLOYMENT_ACTION}"
+                    echo "Environment: ${params.ENVIRONMENT}"
+                    echo "Version: ${params.VERSION}"
+
+                    if (params.ENVIRONMENT == 'PRODUCTION' &&
+                        params.CONFIRM_PROD != 'YES') {
+                        error('Production deployment requires CONFIRM_PROD=YES')
+                    }
+
+                    echo 'Parameter validation successful'
+                }
             }
         }
     }
