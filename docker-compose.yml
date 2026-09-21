@@ -1,0 +1,9 @@
+services:
+  retail-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: retail-platform:4.2.1
+    container_name: retail-platform-compose
+    ports:
+      - "8081:80"
