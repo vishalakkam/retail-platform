@@ -62,5 +62,18 @@ pipeline {
                 }
             }
         }
+
+        stage('Identify Git Commit') {
+            steps {
+                script {
+                    def commitId = bat(
+                        script: 'git rev-parse HEAD',
+                        returnStdout: true
+                    ).trim()
+
+                    echo "Deploying Git commit: ${commitId}"
+                }
+            }
+        }
     }
 }
