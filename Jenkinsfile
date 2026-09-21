@@ -83,7 +83,7 @@ pipeline {
 
                     echo "Building Docker image: ${imageTag}"
 
-                    bat "docker build -t ${imageTag} ."
+                    bat bat "\"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe\" build -t ${imageTag} ."
                 }
             }
         }
