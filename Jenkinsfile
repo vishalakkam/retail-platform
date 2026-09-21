@@ -100,5 +100,21 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy Application') {
+            steps {
+                script {
+                    def imageTag = "retail-platform:${params.VERSION}-${env.BUILD_NUMBER}"
+
+                    echo "Deploying image: ${imageTag}"
+
+                    bat '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" stop retail-platform-prod'
+
+                    bat '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" rm retail-platform-prod'
+
+                    bat "\"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe\" run -d --name retail-platform-prod -p 8082:80 ${imageTag}"
+                }
+            }
+        }
     }
 }
