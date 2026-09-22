@@ -7,3 +7,9 @@ services:
     container_name: retail-platform-compose
     ports:
       - "8081:80"
+    networks:
+      - application-network
+
+networks:
+  application-network:
+    driver: bridge
