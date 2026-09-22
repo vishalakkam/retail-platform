@@ -1,6 +1,7 @@
 pipeline {
 agent any
 
+
 parameters {
     choice(
         name: 'DEPLOYMENT_ACTION',
@@ -63,6 +64,14 @@ stages {
         }
     }
 
+    stage('Checkout Version') {
+        steps {
+            bat 'git fetch --tags'
+            bat 'git checkout tags/v%VERSION%'
+            echo "Checked out version v${params.VERSION}"
+        }
+    }
+
     stage('Identify Git Commit') {
         steps {
             script {
@@ -110,7 +119,10 @@ stages {
 
                 echo "Starting new container: ${imageTag}"
 
-                bat '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" rm -f retail-platform-new'
+                bat(
+                    returnStatus: true,
+                    script: '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" rm -f retail-platform-new'
+                )
 
                 bat "\"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe\" run -d --name retail-platform-new -p 8083:80 ${imageTag}"
 
@@ -125,16 +137,18 @@ stages {
                 try {
                     echo 'Checking new application health...'
 
-                  bat 'curl --fail --silent http://localhost:9999'
+                    bat 'curl --fail --silent http://localhost:8083'
 
                     echo 'Health check successful'
                 }
                 catch (err) {
-
                     echo 'Health check FAILED'
                     echo 'Starting automatic rollback...'
 
-                    bat '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" rm -f retail-platform-new'
+                    bat(
+                        returnStatus: true,
+                        script: '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" rm -f retail-platform-new'
+                    )
 
                     echo "Previous production image remains active: ${env.PREVIOUS_IMAGE}"
 
@@ -149,8 +163,8 @@ stages {
             script {
                 def imageTag = "retail-platform:${params.VERSION}-${env.BUILD_NUMBER}"
 
-                echo "New image passed health check."
-                echo "Replacing old production container..."
+                echo 'New image passed health check.'
+                echo 'Replacing old production container...'
 
                 bat '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" stop retail-platform-prod'
 
@@ -158,7 +172,10 @@ stages {
 
                 bat "\"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe\" run -d --name retail-platform-prod -p 8082:80 ${imageTag}"
 
-                bat '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" rm -f retail-platform-new'
+                bat(
+                    returnStatus: true,
+                    script: '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" rm -f retail-platform-new'
+                )
 
                 echo 'New version is now running in production.'
             }
