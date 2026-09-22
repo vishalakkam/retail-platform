@@ -88,6 +88,7 @@ pipeline {
             steps {
                 script {
                     def imageTag = "retail-platform:${params.VERSION}-${env.BUILD_NUMBER}"
+
                     echo "Building Docker image: ${imageTag}"
                 }
 
@@ -135,11 +136,12 @@ pipeline {
                     try {
                         echo 'Checking new application health...'
 
-                       if (params.VERSION == '4.2.2') {
-    bat 'curl --fail --silent http://localhost:8083/nonexistent-health-check'
-} else {
-    bat 'curl --fail --silent http://localhost:8083'
-}
+                        if (params.VERSION == '4.2.2') {
+                            echo 'FAILURE INJECTION: forcing health check failure for 4.2.2'
+                            bat 'curl --fail --silent http://localhost:8083/nonexistent-health-check'
+                        } else {
+                            bat 'curl --fail --silent http://localhost:8083'
+                        }
 
                         echo 'Health check successful'
                     }
@@ -152,16 +154,9 @@ pipeline {
                             script: '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" rm -f retail-platform-new'
                         )
 
-                        echo "Restoring previous production image: ${env.PREVIOUS_IMAGE}"
+                        echo "Previous production image remains active: ${env.PREVIOUS_IMAGE}"
 
-                        bat(
-                            returnStatus: true,
-                            script: '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" rm -f retail-platform-prod'
-                        )
-
-                        bat "\"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe\" run -d --name retail-platform-prod -p 8082:80 ${env.PREVIOUS_IMAGE}"
-
-                        echo 'Checking restored production version...'
+                        echo 'Checking previous production version...'
 
                         bat 'curl --fail --silent http://localhost:8082'
 
