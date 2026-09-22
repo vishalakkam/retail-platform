@@ -1,7 +1,6 @@
 pipeline {
 agent any
 
-```
 parameters {
     choice(
         name: 'DEPLOYMENT_ACTION',
@@ -166,6 +165,6 @@ stages {
         }
     }
 }
-```
+
 
 }
