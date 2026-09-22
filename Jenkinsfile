@@ -1,3 +1,4 @@
+```groovy
 pipeline {
     agent any
 
@@ -38,6 +39,7 @@ pipeline {
 
                     if (params.ENVIRONMENT == 'PRODUCTION' &&
                         params.CONFIRM_PROD != 'YES') {
+
                         error('Production deployment requires CONFIRM_PROD=YES')
                     }
 
@@ -55,6 +57,7 @@ pipeline {
                         script: "git rev-parse --verify refs/tags/${tagName}",
                         returnStatus: true
                     ) != 0) {
+
                         error("Git tag ${tagName} does not exist")
                     }
 
@@ -101,20 +104,33 @@ pipeline {
             }
         }
 
-        stage('Deploy Application') {
+        stage('Deploy New Container') {
             steps {
                 script {
                     def imageTag = "retail-platform:${params.VERSION}-${env.BUILD_NUMBER}"
 
-                    echo "Deploying image: ${imageTag}"
+                    echo "Starting new container: ${imageTag}"
 
-                    bat '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" stop retail-platform-prod'
+                    bat '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" rm -f retail-platform-new'
 
-                    bat '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" rm retail-platform-prod'
+                    bat "\"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe\" run -d --name retail-platform-new -p 8083:80 ${imageTag}"
 
-                    bat "\"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe\" run -d --name retail-platform-prod -p 8082:80 ${imageTag}"
+                    echo 'New container started on port 8083'
+                }
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                script {
+                    echo 'Checking new application health...'
+
+                    bat 'curl --fail --silent http://localhost:8083'
+
+                    echo 'Health check successful'
                 }
             }
         }
     }
 }
+```
