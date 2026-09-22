@@ -1,7 +1,7 @@
 pipeline {
 agent any
 
-
+```
 parameters {
     choice(
         name: 'DEPLOYMENT_ACTION',
@@ -97,7 +97,9 @@ stages {
                     returnStdout: true
                 ).trim()
 
-                echo "Previous production image: ${previousImage}"
+                env.PREVIOUS_IMAGE = previousImage
+
+                echo "Previous production image: ${env.PREVIOUS_IMAGE}"
             }
         }
     }
@@ -121,15 +123,49 @@ stages {
     stage('Health Check') {
         steps {
             script {
-                echo 'Checking new application health...'
+                try {
+                    echo 'Checking new application health...'
 
-                bat 'curl --fail --silent http://localhost:8083'
+                    bat 'curl --fail --silent http://localhost:8083'
 
-                echo 'Health check successful'
+                    echo 'Health check successful'
+                }
+                catch (err) {
+
+                    echo 'Health check FAILED'
+                    echo 'Starting automatic rollback...'
+
+                    bat '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" rm -f retail-platform-new'
+
+                    echo "Previous production image remains active: ${env.PREVIOUS_IMAGE}"
+
+                    error('Deployment failed. Automatic rollback completed.')
+                }
+            }
+        }
+    }
+
+    stage('Replace Production') {
+        steps {
+            script {
+                def imageTag = "retail-platform:${params.VERSION}-${env.BUILD_NUMBER}"
+
+                echo "New image passed health check."
+                echo "Replacing old production container..."
+
+                bat '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" stop retail-platform-prod'
+
+                bat '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" rm retail-platform-prod'
+
+                bat "\"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe\" run -d --name retail-platform-prod -p 8082:80 ${imageTag}"
+
+                bat '"C:\\Users\\Vishal Akkam\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" rm -f retail-platform-new'
+
+                echo 'New version is now running in production.'
             }
         }
     }
 }
-
+```
 
 }
