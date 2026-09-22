@@ -135,7 +135,11 @@ pipeline {
                     try {
                         echo 'Checking new application health...'
 
-                        bat 'curl --fail --silent http://localhost:8083'
+                       if (params.VERSION == '4.2.2') {
+    bat 'curl --fail --silent http://localhost:8083/nonexistent-health-check'
+} else {
+    bat 'curl --fail --silent http://localhost:8083'
+}
 
                         echo 'Health check successful'
                     }
