@@ -125,7 +125,7 @@ stages {
                 try {
                     echo 'Checking new application health...'
 
-                    bat 'curl --fail --silent http://localhost:8083'
+                  bat 'curl --fail --silent http://localhost:9999'
 
                     echo 'Health check successful'
                 }
